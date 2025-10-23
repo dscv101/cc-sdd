@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from cc_sdd_mcp.models.specification import SpecificationMetadata
-from cc_sdd_mcp.models.steering import SteeringDocument, SteeringFileType
+from cc_sdd_mcp.models.steering import SteeringDocument, SteeringFileType, SteeringStatus
 from cc_sdd_mcp.utils.paths import (
     ensure_directory_exists,
     get_spec_dir,
@@ -116,6 +116,42 @@ class FileSystemManager:
             )
 
         return documents
+
+    def get_steering_status(self) -> SteeringStatus:
+        """Get status of steering documents.
+
+        Returns:
+            SteeringStatus object with current state
+        """
+        # Check if steering directory exists
+        exists = self.steering_dir.exists()
+
+        # List existing documents
+        documents = self.list_steering_documents()
+
+        # Find missing defaults
+        default_types = [
+            SteeringFileType.PRODUCT,
+            SteeringFileType.TECH,
+            SteeringFileType.STRUCTURE,
+        ]
+        existing_types = {doc.file_type for doc in documents}
+        missing_defaults = [
+            file_type for file_type in default_types if file_type not in existing_types
+        ]
+
+        # Get most recent modification time
+        last_updated = None
+        if documents:
+            last_updated = max(doc.last_modified for doc in documents)
+
+        return SteeringStatus(
+            exists=exists,
+            steering_dir=self.steering_dir,
+            documents=documents,
+            missing_defaults=missing_defaults,
+            last_updated=last_updated,
+        )
 
     def ensure_spec_dir_exists(self, feature_name: str) -> Path:
         """Ensure a spec directory exists for a feature.
