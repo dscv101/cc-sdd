@@ -130,15 +130,18 @@ def create_server(config: ServerConfig | None = None) -> Server:
     return server
 
 
-async def serve() -> None:
+async def serve(config: ServerConfig | None = None) -> None:
     """Run the MCP server with stdio transport.
 
     This is the main entry point for the server. It sets up the server
     and runs it with stdio transport for communication with MCP clients.
+
+    Args:
+        config: Optional server configuration (uses default if not provided)
     """
     logger.info("Starting cc-sdd MCP server")
 
-    server = create_server()
+    server = create_server(config)
     options = server.create_initialization_options()
 
     async with stdio_server() as (read_stream, write_stream):
