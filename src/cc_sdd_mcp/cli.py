@@ -35,7 +35,7 @@ def cli(ctx: click.Context, config: Path | None, version: bool) -> None:
 
     # If no subcommand is provided, default to start
     if ctx.invoked_subcommand is None:
-        ctx.invoke(start, config=config)
+        ctx.invoke(start, config=config, log_level=None)
 
 
 @cli.command()
@@ -74,7 +74,7 @@ def start(config: Path | None, log_level: str | None) -> None:
         server_config = ServerConfig.load(config) if config else ServerConfig.load()
 
         # Override log level if provided
-        if log_level:
+        if log_level and isinstance(log_level, str):
             server_config.log_level = log_level.upper()
 
         # Start the server
