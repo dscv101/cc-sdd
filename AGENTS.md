@@ -66,13 +66,21 @@ When modifying templates:
 
 ## Recent Work
 
-### PR #7: Template Enhancement (2025-10-23)
+### PR #7: Template Enhancement and Command Updates (2025-10-23)
+
+#### Phase 1: Template Enhancement
 **What Changed:**
 - Enhanced `requirements.md` with intent preservation, conflict detection, rich EARS examples
 - Added "Intent Preservation and Design Rationale" section to `design.md`
 - Added "Ambiguity Detection and Open Questions" section to `design.md`
 - Completely restructured `tasks.md` with detailed traceability and validation criteria
 - Significantly expanded `ears-format.md` with domain examples and anti-patterns
+
+#### Phase 2: Command Compatibility Updates
+**What Changed:**
+- Updated 18 command files across all 6 agent types (claude-code, claude-code-agent, cursor, codex, windsurf, github-copilot)
+- Each command now explicitly instructs AI to fill ALL enhanced template sections
+- Commands now generate: Document Metadata, Intent/Context, Enhanced formats with IDs/Priority/Intent, Conflict Detection, Review Checklists, Progress Tracking
 
 **Key Improvements:**
 - Document metadata sections for version control across all templates
@@ -120,4 +128,3 @@ When contributing to templates:
 - [Sean Grove's "The New Code" talk](https://www.youtube.com/watch?v=8rABwKRsec4)
 - [EARS Notation Guide](https://visuresolutions.com/alm-guide/adopting-ears-notation/)
 - [Spec-Driven Development at The New Stack](https://thenewstack.io/spec-driven-development-the-key-to-scalable-ai-agents/)
-
