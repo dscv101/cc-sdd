@@ -66,3 +66,6 @@ with contextlib.suppress(ImportError):
 
 with contextlib.suppress(ImportError):
     from cc_sdd_mcp.tools import validation  # noqa: F401
+
+with contextlib.suppress(ImportError):
+    from cc_sdd_mcp.tools import templates  # noqa: F401
