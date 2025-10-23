@@ -1,4 +1,8 @@
-# Design Document Template
+# Design Specification
+
+> **"Specifications are executable documentation. Design is where intent becomes architecture."** - Inspired by Sean Grove's work on spec-driven development
+>
+> This document translates requirements into architecture. It preserves the **why** behind every decision, not just the **what**.
 
 ---
 **Document Length Guidelines: Max 1000 lines**
@@ -13,6 +17,18 @@
 
 **Warning**: Approaching 1000 lines indicates excessive feature complexity that may require design simplification.
 ---
+
+## Document Metadata
+
+| Field | Value |
+|-------|-------|
+| **Version** | {{VERSION}} (e.g., 1.0.0) |
+| **Status** | {{STATUS}} (Draft \| Review \| Approved \| Implementation \| Complete) |
+| **Author(s)** | {{AUTHORS}} |
+| **Reviewers** | {{REVIEWERS}} |
+| **Last Updated** | {{LAST_UPDATED}} |
+| **Requirements Spec** | Link to [requirements.md](requirements.md) version {{REQ_VERSION}} |
+| **Related Designs** | {{RELATED_DESIGNS}} (dependencies on other design docs) |
 
 ## Overview 
 2-3 paragraphs max
@@ -77,6 +93,74 @@ Each decision should follow this format:
 - **Trade-offs**: [What we gain vs. what we sacrifice]
 
 Skip this entire section for simple CRUD operations or when following established patterns without deviation.
+
+## Intent Preservation and Design Rationale
+
+> **Critical**: This section captures the **why** behind the design - the original intent that must not be lost in implementation.
+
+### Why This Design (Non-Obvious Reasoning)
+Document the reasoning that won't be obvious from the code:
+- {{REASONING_1}}: Why we chose this pattern over more obvious alternatives
+- {{REASONING_2}}: What problem this design prevents (that isn't immediately apparent)
+- {{REASONING_3}}: How this enables future features or scales
+
+**Example:** "We're using an event-sourced approach not just for audit trails, but because Requirements 2.3-2.5 imply users will need to 'time-travel' through data states. A traditional CRUD model would make this prohibitively expensive to add later."
+
+### What Could Go Wrong (Anticipated Issues)
+Be honest about risks and unknowns:
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|-----------|
+| {{RISK_1}} | High/Med/Low | High/Med/Low | {{MITIGATION_STRATEGY}} |
+
+**Example:** "High-Likelihood, Medium-Impact: If payment provider webhook latency exceeds 5s (vs assumed 2s), users will see stale data. Mitigation: Implement optimistic UI updates with rollback capability."
+
+### Evolution Path (Future-Proofing)
+How does this design enable future requirements?
+- {{FUTURE_1}}: This design makes it straightforward to add...
+- {{FUTURE_2}}: The architecture accommodates...
+
+**Example:** "By separating notification routing from notification delivery, we can later add per-user notification preferences without touching the core notification logic."
+
+### Explicit Anti-Goals (What We're NOT Solving)
+Be crystal clear about scope boundaries:
+- {{ANTI_GOAL_1}}: Explicitly not supported in this design
+- {{ANTI_GOAL_2}}: Intentionally deferred to future iterations
+
+**Example:** "We are NOT solving multi-region data residency in this design. All data resides in US-East. Adding EU region support later will require design revision."
+
+## Ambiguity Detection and Open Questions
+
+> **Purpose**: Surface assumptions, unknowns, and decisions that need validation before/during implementation.
+
+### Questions Requiring Answers Before Implementation
+| Question | Impact if Wrong | Owner | Target Date | Status |
+|----------|----------------|-------|-------------|--------|
+| {{QUESTION_1}} | {{IMPACT}} | {{OWNER}} | {{DATE}} | Open/Resolved |
+
+**Example:** "What's the max concurrent webhook volume we need to handle? (Impact: If >1000/sec, need to add queue; if <100/sec, direct processing is fine. Owner: Product. Due: Before sprint start.)"
+
+### Assumptions Requiring Validation
+| Assumption | Validation Method | Risk if Invalid |
+|------------|-------------------|-----------------|
+| {{ASSUMPTION_1}} | {{HOW_TO_VERIFY}} | {{RISK}} |
+
+**Example:** "Assumption: External API response time <500ms. Validation: Load test in staging. Risk: If >2s, need to add caching layer."
+
+### Integration Points Requiring Negotiation
+External systems or teams we depend on:
+| Integration Point | Contact | Open Items | Blocker Status |
+|------------------|---------|------------|----------------|
+| {{SYSTEM_1}} | {{CONTACT}} | {{ITEMS}} | Yes/No |
+
+**Example:** "Analytics Service: @data-team. Open: Event schema approval. Blocker: Yes - can't implement without schema."
+
+### Design Decisions Pending Clarification
+Decisions made but confidence is low:
+| Decision | Confidence | What Would Change It |
+|----------|-----------|---------------------|
+| {{DECISION_1}} | Low/Medium | {{TRIGGER_FOR_CHANGE}} |
+
+**Example:** "Decision: Use Redis for session storage. Confidence: Medium. Would change if: Sessions need to survive Redis failures (then use DB-backed sessions)."
 
 ## System Flows
 
@@ -308,3 +392,63 @@ Error tracking, logging, and health monitoring implementation.
 **REQUIRED**: Include Mermaid flowchart showing migration phases
 
 **Process**: Phase breakdown, rollback triggers, validation checkpoints
+
+## Review and Validation
+
+### Design Review Checklist
+**Requirements Alignment:**
+- [ ] Every requirement from [requirements.md](requirements.md) is addressed
+- [ ] No requirements are over-engineered or under-served
+- [ ] Requirement IDs are referenced in relevant components
+
+**Intent Preservation:**
+- [ ] Non-obvious design decisions are explained with rationale
+- [ ] Future evolution paths are documented
+- [ ] Anti-goals and scope boundaries are explicit
+- [ ] "What could go wrong" risks are identified
+
+**Ambiguity Resolution:**
+- [ ] All critical questions have answers or owners
+- [ ] Assumptions are validated or validation plan exists
+- [ ] External dependencies are confirmed available
+- [ ] Low-confidence decisions have triggers for revision
+
+**Technical Rigor:**
+- [ ] Architecture diagrams accurately reflect the design
+- [ ] Component responsibilities are clear and non-overlapping
+- [ ] Interface contracts are complete and unambiguous
+- [ ] Data models support all requirements
+- [ ] Error handling covers all failure modes
+- [ ] Testing strategy validates all critical paths
+
+**Implementation Readiness:**
+- [ ] Design is detailed enough for consistent implementation
+- [ ] Technology choices are justified and approved
+- [ ] Performance targets are specific and measurable
+- [ ] Security considerations are addressed
+- [ ] No blockers remain unresolved
+
+### Stakeholder Sign-Off
+| Role | Name | Date | Status | Comments |
+|------|------|------|--------|----------|
+| Engineering Lead | {{NAME}} | {{DATE}} | {{STATUS}} | {{COMMENTS}} |
+| Architecture Review | {{NAME}} | {{DATE}} | {{STATUS}} | {{COMMENTS}} |
+| Security Review | {{NAME}} | {{DATE}} | {{STATUS}} | {{COMMENTS}} |
+| Product Owner | {{NAME}} | {{DATE}} | {{STATUS}} | {{COMMENTS}} |
+
+### Open Items Before Implementation
+| Item | Owner | Blocking? | Target Resolution |
+|------|-------|-----------|------------------|
+| {{ITEM_1}} | {{OWNER}} | Yes/No | {{DATE}} |
+
+## Version History
+| Version | Date | Author | Changes | Reason for Change |
+|---------|------|--------|---------|------------------|
+| {{VERSION}} | {{DATE}} | {{AUTHOR}} | {{CHANGES}} | {{REASON}} |
+
+---
+
+**Next Steps:** 
+1. Resolve all blocking open items
+2. Obtain required sign-offs
+3. Proceed to [Implementation Tasks](tasks.md)
