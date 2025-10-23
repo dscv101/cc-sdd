@@ -93,12 +93,24 @@ When modifying templates:
 **Philosophy Shift:**
 Templates now embody "specifications as executable documentation" rather than generic placeholders. Each template guides creation of specs that are testable, traceable, and intent-preserving.
 
+#### Phase 3: MCP Server Template Access Fix
+**What Changed:**
+- Fixed `TemplateLoader.load_spec_template()` to use correct path: `shared/settings/templates/specs`
+- Updated `SpecWorkflow` to use spec_type as template name instead of hardcoded "default"
+- MCP server now correctly loads enhanced EARS templates for all specification generation
+
+**Impact:**
+- MCP server can now access and use the enhanced requirements, design, and tasks templates
+- Specifications generated via MCP tools will use rich EARS notation and Sean Grove's style
+- Template loading path mismatch resolved (was looking in `settings/specs/requirements/default.md`, now correctly finds `shared/settings/templates/specs/requirements.md`)
+
 **Lessons Learned:**
 1. Real-world examples are far more valuable than generic placeholders like {{ROLE}}/{{CAPABILITY}}
 2. Intent documentation is critical for preserving the WHY behind decisions
 3. Conflict detection must be built into the specification process, not added later
 4. EARS notation requires concrete system names to be truly effective
 5. Templates should guide users away from anti-patterns, not just show correct patterns
+6. Template path resolution must be validated when template structure changes
 
 ## Future Considerations
 
