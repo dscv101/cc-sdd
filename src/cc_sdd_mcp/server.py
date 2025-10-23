@@ -14,20 +14,62 @@ from mcp.types import (
     Tool,
 )
 
+from cc_sdd_mcp.models.config import ServerConfig
 from cc_sdd_mcp.tools.registry import get_all_tools, get_tool_handler
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Global configuration
+_server_config: ServerConfig | None = None
+
+
+def get_config() -> ServerConfig:
+    """Get the current server configuration.
+
+    Returns:
+        Current server configuration
+    """
+    global _server_config
+    if _server_config is None:
+        _server_config = ServerConfig.load()
+    return _server_config
+
+
+def set_config(config: ServerConfig) -> None:
+    """Set the server configuration.
+
+    Args:
+        config: Server configuration to use
+    """
+    global _server_config
+    _server_config = config
+
+
+# Configure logging from config
+config = get_config()
+logging.basicConfig(
+    level=getattr(logging, config.log_level),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
-def create_server() -> Server:
+def create_server(config: ServerConfig | None = None) -> Server:
     """Create and configure the MCP server.
+
+    Args:
+        config: Optional server configuration (uses default if not provided)
 
     Returns:
         Configured MCP server instance
     """
-    server = Server("cc-sdd-mcp")
+    if config:
+        set_config(config)
+
+    current_config = get_config()
+    server = Server(current_config.server_name)
+
+    logger.info(f"Creating {current_config.server_name} v{current_config.server_version}")
+    logger.info(f"Project directory: {current_config.project_dir}")
+    logger.info(f"Log level: {current_config.log_level}")
 
     @server.list_tools()
     async def list_tools() -> list[Tool]:

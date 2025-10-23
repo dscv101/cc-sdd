@@ -13,7 +13,6 @@ from cc_sdd_mcp.models.specification import (
 )
 from cc_sdd_mcp.models.steering import SteeringConfig
 from cc_sdd_mcp.tools.registry import register_tool
-from cc_sdd_mcp.utils.filesystem import FileSystemManager
 from cc_sdd_mcp.workflows.spec_workflow import SpecWorkflow
 
 logger = logging.getLogger(__name__)

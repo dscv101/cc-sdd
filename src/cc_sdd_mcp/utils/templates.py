@@ -1,22 +1,37 @@
-"""Template discovery and loading utilities."""
+"""Template discovery and loading utilities with Jinja2 support."""
 
 from pathlib import Path
+
+from jinja2 import Environment, FileSystemLoader, Template
 
 # Path to templates directory relative to package root
 TEMPLATES_DIR = Path(__file__).parent.parent.parent.parent / "tools" / "cc-sdd" / "templates"
 
 
 class TemplateLoader:
-    """Loads templates for steering and specification documents."""
+    """Loads and renders templates for steering and specification documents.
 
-    def __init__(self, language: str = "en"):
+    Supports both simple string substitution and Jinja2 templating.
+    """
+
+    def __init__(self, project_dir: Path = Path("."), language: str = "en"):
         """Initialize the template loader.
 
         Args:
+            project_dir: Project directory for loading custom templates
             language: Language code for templates (en, ja, zh-TW, etc.)
         """
         self.language = language
         self.templates_dir = TEMPLATES_DIR
+        self.project_dir = project_dir
+
+        # Initialize Jinja2 environment
+        self.jinja_env = Environment(
+            loader=FileSystemLoader([str(self.templates_dir), str(self.project_dir)]),
+            autoescape=False,  # Markdown doesn't need HTML escaping
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
 
     def _get_template_path(self, category: str, filename: str) -> Path | None:
         """Get path to a template file.
@@ -223,3 +238,79 @@ Total: X hours
             placeholder = f"{{{{{key}}}}}"
             result = result.replace(placeholder, value)
         return result
+
+    def render_jinja_template(self, template_content: str, context: dict) -> str:
+        """Render a template string using Jinja2.
+
+        Args:
+            template_content: Template content with Jinja2 syntax
+            context: Dictionary of context variables for rendering
+
+        Returns:
+            Rendered template content
+        """
+        template = Template(template_content)
+        return template.render(**context)
+
+    def render_jinja_file(self, template_path: str | Path, context: dict) -> str:
+        """Render a template file using Jinja2.
+
+        Args:
+            template_path: Path to template file (relative to template directories)
+            context: Dictionary of context variables for rendering
+
+        Returns:
+            Rendered template content
+
+        Raises:
+            FileNotFoundError: If template file is not found
+        """
+        try:
+            template = self.jinja_env.get_template(str(template_path))
+            return template.render(**context)
+        except Exception as e:
+            raise FileNotFoundError(f"Template not found: {template_path}") from e
+
+    def list_templates(self, category: str | None = None) -> list[dict[str, str]]:
+        """List all available templates.
+
+        Args:
+            category: Optional category filter (settings, specs, etc.)
+
+        Returns:
+            List of template info dictionaries with name, path, and category
+        """
+        templates = []
+
+        # Search in templates directory
+        search_dir = self.templates_dir
+        if category:
+            search_dir = search_dir / category
+
+        if search_dir.exists():
+            for template_file in search_dir.rglob("*.md"):
+                rel_path = template_file.relative_to(self.templates_dir)
+                templates.append(
+                    {
+                        "name": template_file.stem,
+                        "path": str(rel_path),
+                        "category": str(rel_path.parent),
+                        "language": self._extract_language(template_file.name),
+                    }
+                )
+
+        return templates
+
+    def _extract_language(self, filename: str) -> str:
+        """Extract language code from filename.
+
+        Args:
+            filename: Template filename (e.g., "product.en.md")
+
+        Returns:
+            Language code or "default" if none found
+        """
+        parts = filename.split(".")
+        if len(parts) >= 3:  # name.lang.md
+            return parts[-2]
+        return "default"
