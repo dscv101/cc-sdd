@@ -113,8 +113,8 @@ class SpecWorkflow:
         for doc in steering_status.documents:
             steering_context.append(f"# {doc.file_type.value}\n{doc.content}")
 
-        # Generate requirements using template
-        template = self.template_loader.load_spec_template("default", "requirements")
+        # Generate requirements using enhanced template
+        template = self.template_loader.load_spec_template("requirements", "requirements")
         if not template:
             return {"success": False, "error": "Requirements template not found"}
 
