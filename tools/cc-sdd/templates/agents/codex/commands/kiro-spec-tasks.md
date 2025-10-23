@@ -40,8 +40,51 @@ Generate implementation tasks for feature **$1** based on approved requirements 
 - Read `{{KIRO_DIR}}/settings/rules/tasks-generation.md` for principles
 - Read `{{KIRO_DIR}}/settings/templates/specs/tasks.md` for format
 
-**Generate task list following all rules**:
-- Use language specified in spec.json
+**Generate task list following enhanced format**:
+
+**A. Fill Document Metadata Section**:
+- VERSION: Start with 1.0.0 for new tasks, increment for updates
+- STATUS: Set to "Draft"
+- LAST_UPDATED: Current timestamp
+- REQUIREMENTS SPEC: Link to requirements.md with its version
+- DESIGN SPEC: Link to design.md with its version
+- SPRINT/ITERATION: Leave as placeholder if applicable
+
+**B. Generate Implementation Overview**:
+- Total Estimated Effort: Sum of all task estimates
+- Critical Path Tasks: Identify tasks that block others
+- High-Risk Tasks: Flag tasks with technical uncertainty
+
+**C. Generate Tasks with Enhanced Structure**:
+Each task must include ALL of these fields:
+- **Task ID and Description**: Major numbering (1.0, 2.0) or sub-task (2.1, 2.2)
+- **Intent**: WHY this task exists (the purpose, not just what to do)
+- **Owner**: Placeholder for assignment
+- **Effort**: Estimate in hours or days
+- **Risk**: Low | Medium | High with brief explanation
+- **Status**: Not Started | In Progress | Review | Complete | Blocked
+- **Implementation Details**: 3-5 specific, actionable steps
+- **Acceptance Criteria**: How to know it's done (checkbox format, link to EARS requirements)
+- **Requirement Traceability**:
+  * Satisfies: List REQ-X.Y IDs
+  * Implements: Reference design components
+  * Validates: Specific EARS criteria
+- **Validation & Testing**: Unit tests, integration tests, manual validation scope
+- **Dependencies**: 
+  * Blocked by: Task IDs (if applicable)
+  * Blocks: Task IDs (if applicable)
+- **Notes/Risks**: Implementation considerations or gotchas
+
+**D. Complete Progress Tracking Section**:
+- Completion Summary: Total, completed, in-progress, blocked counts
+- Blocked Tasks table: Document blocking issues
+- High-Risk Task Status: Track mitigation progress
+
+**E. Add Implementation Checklist**:
+- Per-task completion checklist with quality gates
+- Code review, testing, documentation, security checks
+
+Use language specified in spec.json for all content
 - Map all requirements to tasks
 - Ensure all design components included
 - Verify task progression is logical and incremental
@@ -50,7 +93,7 @@ Generate implementation tasks for feature **$1** based on approved requirements 
 ### Step 3: Finalize
 
 **Write and update**:
-- Create/update `{{KIRO_DIR}}/specs/$1/tasks.md`
+- Create/update `{{KIRO_DIR}}/specs/$1/tasks.md` with all enhanced fields
 - Update spec.json metadata:
   - Set `phase: "tasks-generated"`
   - Set `approvals.tasks.generated: true, approved: false`
@@ -128,5 +171,3 @@ Provide brief summary in the language specified in spec.json:
 - Existing tasks used as reference (merge mode)
 
 **Note**: The implementation phase will guide you through executing tasks with appropriate context and validation.
-
-

@@ -1,7 +1,8 @@
-<meta>
+---
 description: Create comprehensive technical design for a specification
-argument-hint: <feature-name:$1> [-y:$2]
-</meta>
+allowed-tools: Bash, Glob, Grep, LS, Read, Write, Edit, MultiEdit, Update, WebSearch, WebFetch
+argument-hint: <feature-name> [-y]
+---
 
 # Technical Design Generator
 
@@ -74,11 +75,41 @@ Generate technical design document for feature **$1** based on approved requirem
    - Read `{{KIRO_DIR}}/settings/rules/design-principles.md` for principles
 
 2. **Generate Design Document**:
+   
+   **A. Fill Document Metadata Section**:
+   - VERSION: Start with 1.0.0 for new designs, increment for updates
+   - STATUS: Set to "Draft"
+   - AUTHORS: Use "AI Agent" or team name from steering context
+   - REVIEWERS: Leave as placeholder for user to fill
+   - LAST_UPDATED: Current timestamp
+   - REQUIREMENTS SPEC: Link to requirements.md with its version
+   - RELATED_DESIGNS: List any dependencies (from steering context)
+   
+   **B. Generate Core Design Sections**:
    - **Follow specs/design.md template structure and generation instructions strictly**
    - **Integrate all discovery findings**: Use researched information (APIs, patterns, technologies) throughout component definitions, architecture decisions, and integration points
    - If existing design.md found in Step 1, use it as reference context (merge mode)
    - Apply design rules: Type Safety, Visual Communication, Formal Tone
-   - Use language specified in spec.json
+   
+   **C. Complete Intent Preservation and Design Rationale Section**:
+   - **Why This Design**: Document non-obvious reasoning that won't be clear from code
+   - **What Could Go Wrong**: Honest assessment of risks with likelihood, impact, and mitigation
+   - **Evolution Path**: How this design enables future requirements
+   - **Explicit Anti-Goals**: Clear scope boundaries of what's NOT being solved
+   
+   **D. Complete Ambiguity Detection and Open Questions Section**:
+   - **Questions Requiring Answers**: List critical unknowns with impact analysis, owners, and target dates
+   - **Assumptions Requiring Validation**: Document assumptions, how to validate them, and risk if invalid
+   - **Integration Points Requiring Negotiation**: External systems/teams with open items and blocker status
+   - **Design Decisions Pending Clarification**: Low-confidence decisions with triggers for revision
+   
+   **E. Complete Review and Validation Section**:
+   - Fill out comprehensive design review checklist
+   - Add stakeholder sign-off table with placeholder roles
+   - List any open items blocking implementation
+   - Initialize version history with v1.0.0 entry
+   
+   Use language specified in spec.json for all content
 
 3. **Update Metadata** in spec.json:
    - Set `phase: "design-generated"`
@@ -127,12 +158,12 @@ Provide brief summary in the language specified in spec.json:
 **Requirements Not Approved**:
 - **Stop Execution**: Cannot proceed without approved requirements
 - **User Message**: "Requirements not yet approved. Approval required before design generation."
-- **Suggested Action**: "Run `/kiro/spec-design $1 -y` to auto-approve requirements and proceed"
+- **Suggested Action**: "Run `/kiro:spec-design $1 -y` to auto-approve requirements and proceed"
 
 **Missing Requirements**:
 - **Stop Execution**: Requirements document must exist
 - **User Message**: "No requirements.md found at `{{KIRO_DIR}}/specs/$1/requirements.md`"
-- **Suggested Action**: "Run `/kiro/spec-requirements $1` to generate requirements first"
+- **Suggested Action**: "Run `/kiro:spec-requirements $1` to generate requirements first"
 
 **Template Missing**:
 - **User Message**: "Template file missing at `{{KIRO_DIR}}/settings/templates/specs/design.md`"
@@ -151,12 +182,13 @@ Provide brief summary in the language specified in spec.json:
 
 **If Design Approved**:
 - Review generated design at `{{KIRO_DIR}}/specs/$1/design.md`
-- **Optional**: Run `/kiro/validate-design $1` for interactive quality review
-- Then `/kiro/spec-tasks $1 -y` to generate implementation tasks
+- **Optional**: Run `/kiro:validate-design $1` for interactive quality review
+- Then `/kiro:spec-tasks $1 -y` to generate implementation tasks
 
 **If Modifications Needed**:
-- Provide feedback and re-run `/kiro/spec-design $1`
+- Provide feedback and re-run `/kiro:spec-design $1`
 - Existing design used as reference (merge mode)
 
 **Note**: Design approval is mandatory before proceeding to task generation.
 
+think hard
