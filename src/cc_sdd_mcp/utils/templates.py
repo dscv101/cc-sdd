@@ -82,13 +82,14 @@ class TemplateLoader:
         """Load a specification template.
 
         Args:
-            template_name: Name of the template
+            template_name: Name of the template (use spec_type for enhanced templates)
             spec_type: Type of spec (requirements, design, tasks)
 
         Returns:
             Template content if found, None otherwise
         """
-        template_path = self._get_template_path(f"settings/specs/{spec_type}", template_name)
+        # For enhanced templates, use spec_type as the filename in shared/settings/templates/specs
+        template_path = self._get_template_path("shared/settings/templates/specs", spec_type)
 
         if template_path and template_path.exists():
             return template_path.read_text(encoding="utf-8")

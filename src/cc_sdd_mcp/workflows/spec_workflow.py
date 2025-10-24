@@ -84,6 +84,79 @@ class SpecWorkflow:
         metadata_file.write_text(metadata.model_dump_json(indent=2))
         logger.info(f"Updated metadata for {metadata.feature_name}")
 
+    def _build_requirements_context(self, metadata: SpecificationMetadata) -> dict[str, Any]:
+        """Build context for requirements template rendering.
+        
+        Args:
+            metadata: Specification metadata
+            
+        Returns:
+            Context dictionary for template rendering
+        """
+        now = datetime.now()
+        return {
+            # Metadata
+            "VERSION": "1.0.0",
+            "STATUS": metadata.current_phase.value,
+            "AUTHORS": "AI Assistant",
+            "AUTHOR": "AI Assistant",
+            "REVIEWERS": "TBD",
+            "LAST_UPDATED": now.strftime("%Y-%m-%d"),
+            "DATE": now.strftime("%Y-%m-%d"),
+            "RELATED_SPECS": "None",
+            
+            # Feature details
+            "NAME": metadata.feature_name,
+            "BUSINESS_PROBLEM": metadata.description,
+            "IMPACT": f"Implements {metadata.feature_name}",
+            "BENEFIT": f"Provides {metadata.feature_name} capability",
+            "MEASURABLE_BENEFIT": "TBD - to be defined during review",
+            
+            # Requirements areas (examples)
+            "REQUIREMENT_AREA_1": "Core Functionality",
+            "REQUIREMENT_AREA_2": "User Experience",
+            "SUB_REQUIREMENT_AREA": "Integration",
+            
+            # EARS-style placeholders
+            "SPECIFIC_ROLE": "user",
+            "ROLE": "system",
+            "CAPABILITY": "process requests",
+            "SPECIFIC_CAPABILITY": "handle edge cases",
+            "WHY_THIS_REQUIREMENT": "to ensure system reliability",
+            "WHY_THIS_BEHAVIOR": "to meet user expectations",
+            "WHY": "to satisfy business requirements",
+            
+            # Constraints and assumptions
+            "CONSTRAINT_1": "Must integrate with existing authentication",
+            "WHY_THIS_CONSTRAINT": "to maintain security standards",
+            "ASSUMPTION_1": "Users have valid accounts",
+            
+            # Alternatives and rationale
+            "ALT_1": "Alternative approach A",
+            "ALT_2": "Alternative approach B",
+            "RATIONALE_1": "Chosen for performance",
+            "RATIONALE_2": "Aligns with architecture",
+            
+            # Non-goals
+            "NON_GOAL_1": "Supporting legacy systems",
+            "NON_GOAL_2": "Backward compatibility with deprecated APIs",
+            
+            # Success metrics
+            "SUCCESS_METRIC_1": ">80% test coverage",
+            "SUCCESS_METRIC_2": "Response time <2s",
+            
+            # Conflicts and resolution
+            "CONFLICT_DESCRIPTION": "None identified",
+            "HOW_RESOLVED": "N/A",
+            
+            # Questions and ownership
+            "QUESTION_1": "TBD during design phase",
+            "OWNER": "TBD",
+            "OTHER_STAKEHOLDER": "Product Team",
+            "PRIORITY": "Medium",
+            "CHANGES": "Initial version",
+        }
+
     async def generate_requirements(
         self, feature_name: str, auto_approve: bool = False
     ) -> dict[str, Any]:
@@ -113,63 +186,22 @@ class SpecWorkflow:
         for doc in steering_status.documents:
             steering_context.append(f"# {doc.file_type.value}\n{doc.content}")
 
-        # Generate requirements using template
-        template = self.template_loader.load_spec_template("default", "requirements")
+        # Generate requirements using enhanced template
+        template = self.template_loader.load_spec_template("requirements", "requirements")
         if not template:
             return {"success": False, "error": "Requirements template not found"}
 
-        # Create requirements document
-        requirements = RequirementsDocument(
-            feature_name=feature_name,
-            functional_requirements=[
-                f"Functional requirement for {metadata.description}",
-                "User can interact with the feature",
-                "System responds appropriately",
-            ],
-            non_functional_requirements=[
-                "Performance: Response time < 2s",
-                "Security: Data validation required",
-                "Scalability: Support 1000+ concurrent users",
-            ],
-            constraints=[
-                "Must use existing authentication system",
-                "Cannot modify database schema",
-            ],
-            acceptance_criteria=[
-                "Feature meets all functional requirements",
-                "All tests pass with >80% coverage",
-                "Documentation is complete",
-            ],
-        )
+        # Build context and render template
+        context = self._build_requirements_context(metadata)
+        try:
+            content = self.template_loader.render_jinja_template(template, context)
+        except Exception as e:
+            logger.error(f"Failed to render requirements template: {e}")
+            return {"success": False, "error": f"Template rendering failed: {str(e)}"}
 
         # Save requirements
         spec_dir = self._get_spec_dir(feature_name)
         requirements_file = spec_dir / "requirements.md"
-
-        content = f"""# Requirements: {feature_name}
-
-**Description**: {metadata.description}
-
-## Functional Requirements
-
-{chr(10).join(f"- {req}" for req in requirements.functional_requirements)}
-
-## Non-Functional Requirements
-
-{chr(10).join(f"- {req}" for req in requirements.non_functional_requirements)}
-
-## Constraints
-
-{chr(10).join(f"- {constraint}" for constraint in requirements.constraints)}
-
-## Acceptance Criteria
-
-{chr(10).join(f"- {criteria}" for criteria in requirements.acceptance_criteria)}
-
----
-*Generated: {requirements.created_at}*
-"""
-
         requirements_file.write_text(content)
 
         # Update metadata
@@ -184,7 +216,71 @@ class SpecWorkflow:
             "requirements_file": str(requirements_file),
             "current_phase": metadata.current_phase.value,
             "auto_approved": auto_approve,
-            "message": "Requirements generated successfully",
+            "message": "Requirements generated successfully using enhanced EARS template",
+        }
+
+    def _build_design_context(self, metadata: SpecificationMetadata) -> dict[str, Any]:
+        """Build context for design template rendering.
+        
+        Args:
+            metadata: Specification metadata
+            
+        Returns:
+            Context dictionary for template rendering
+        """
+        now = datetime.now()
+        return {
+            # Metadata
+            "VERSION": "1.0.0",
+            "STATUS": metadata.current_phase.value,
+            "AUTHORS": "AI Assistant",
+            "AUTHOR": "AI Assistant",
+            "REVIEWERS": "TBD",
+            "LAST_UPDATED": now.strftime("%Y-%m-%d"),
+            "DATE": now.strftime("%Y-%m-%d"),
+            "REQ_VERSION": "1.0.0",
+            "RELATED_DESIGNS": "None",
+            
+            # Overview and goals
+            "IMPACT": f"Implements {metadata.feature_name}",
+            "ANTI_GOAL_1": "Supporting legacy systems",
+            "ANTI_GOAL_2": "Backward compatibility at expense of performance",
+            
+            # Architecture decisions
+            "DECISION_1": "Use microservices architecture",
+            "REASONING_1": "Enables independent scaling",
+            "REASONING_2": "Improves maintainability",
+            "REASONING_3": "Supports team autonomy",
+            "REASON": "Based on scalability requirements",
+            
+            # Assumptions and constraints
+            "ASSUMPTION_1": "Users have modern browsers",
+            "TRIGGER_FOR_CHANGE": "User feedback or requirements changes",
+            
+            # Design rationale
+            "HOW_TO_VERIFY": "Through integration testing and code review",
+            "ITEMS": "Architecture components, Data models, API design",
+            "ITEM_1": "Component architecture",
+            
+            # Risk management
+            "RISK": "Medium",
+            "RISK_1": "Integration complexity may increase",
+            "MITIGATION_STRATEGY": "Incremental rollout with feature flags",
+            
+            # Future considerations
+            "FUTURE_1": "Support for real-time updates",
+            "FUTURE_2": "Mobile application integration",
+            
+            # System integration
+            "SYSTEM_1": "Authentication service",
+            
+            # Questions and ownership
+            "QUESTION_1": "TBD during implementation",
+            "OWNER": "TBD",
+            "NAME": metadata.feature_name,
+            "CONTACT": "TBD",
+            "COMMENTS": "Initial design",
+            "CHANGES": "Initial version",
         }
 
     async def generate_design(
@@ -223,67 +319,22 @@ class SpecWorkflow:
                 "message": "Please review and approve requirements first, or use auto_approve=true",
             }
 
-        # Load requirements
-        spec_dir = self._get_spec_dir(feature_name)
-        requirements_file = spec_dir / "requirements.md"
-        # Note: requirements content would be used in a full implementation
-        _ = requirements_file.read_text() if requirements_file.exists() else ""
+        # Load design template
+        template = self.template_loader.load_spec_template("design", "design")
+        if not template:
+            return {"success": False, "error": "Design template not found"}
 
-        # Create design document
-        design = DesignDocument(
-            feature_name=feature_name,
-            architecture_overview=f"Architecture for {metadata.description}",
-            components=[
-                {"name": "Frontend", "description": "User interface components"},
-                {"name": "Backend", "description": "API and business logic"},
-                {"name": "Database", "description": "Data persistence layer"},
-            ],
-            data_models=[
-                {"name": "User", "description": "User account model"},
-                {"name": "Session", "description": "User session tracking"},
-            ],
-            api_endpoints=[
-                {"path": "/api/feature", "method": "GET", "description": "Retrieve feature data"},
-                {"path": "/api/feature", "method": "POST", "description": "Create feature data"},
-            ],
-            dependencies=["pydantic", "fastapi", "sqlalchemy"],
-            security_considerations=[
-                "Input validation on all endpoints",
-                "Authentication required for all operations",
-                "Rate limiting on API endpoints",
-            ],
-        )
+        # Build context and render template
+        context = self._build_design_context(metadata)
+        try:
+            content = self.template_loader.render_jinja_template(template, context)
+        except Exception as e:
+            logger.error(f"Failed to render design template: {e}")
+            return {"success": False, "error": f"Template rendering failed: {str(e)}"}
 
         # Save design
+        spec_dir = self._get_spec_dir(feature_name)
         design_file = spec_dir / "design.md"
-        content = f"""# Design: {feature_name}
-
-**Architecture Overview**: {design.architecture_overview}
-
-## Components
-
-{chr(10).join(f"### {comp['name']}{chr(10)}{comp['description']}" for comp in design.components)}
-
-## Data Models
-
-{chr(10).join(f"### {model['name']}{chr(10)}{model['description']}" for model in design.data_models)}
-
-## API Endpoints
-
-{chr(10).join(f"- **{ep['method']}** `{ep['path']}`: {ep.get('description', '')}" for ep in design.api_endpoints)}
-
-## Dependencies
-
-{chr(10).join(f"- {dep}" for dep in design.dependencies)}
-
-## Security Considerations
-
-{chr(10).join(f"- {sec}" for sec in design.security_considerations)}
-
----
-*Generated: {design.created_at}*
-"""
-
         design_file.write_text(content)
 
         # Update metadata
@@ -298,7 +349,89 @@ class SpecWorkflow:
             "design_file": str(design_file),
             "current_phase": metadata.current_phase.value,
             "auto_approved": auto_approve,
-            "message": "Design generated successfully",
+            "message": "Design generated successfully using enhanced template",
+        }
+
+    def _build_tasks_context(self, metadata: SpecificationMetadata) -> dict[str, Any]:
+        """Build context for tasks template rendering.
+        
+        Args:
+            metadata: Specification metadata
+            
+        Returns:
+            Context dictionary for template rendering
+        """
+        now = datetime.now()
+        return {
+            # Metadata
+            "VERSION": "1.0.0",
+            "STATUS": metadata.current_phase.value,
+            "AUTHOR": "AI Assistant",
+            "LAST_UPDATED": now.strftime("%Y-%m-%d"),
+            "DATE": now.strftime("%Y-%m-%d"),
+            "REQ_VERSION": "1.0.0",
+            "DESIGN_VERSION": "1.0.0",
+            "SPRINT": "Sprint 1",
+            
+            # Overview estimates
+            "TOTAL_ESTIMATE": "34 hours",
+            "CRITICAL_TASKS": "1.1 (Foundation setup)",
+            "HIGH_RISK_TASKS": "2.2 (Authentication integration)",
+            
+            # Phase estimates
+            "PHASE_1_ESTIMATE": "12 hours",
+            "PHASE_2_ESTIMATE": "16 hours",
+            "PHASE_3_ESTIMATE": "6 hours",
+            
+            # Task details (examples)
+            "TASK_ID": "1.1",
+            "TASK_DESCRIPTION": "Setup project foundation",
+            "WHY_THIS_TASK": "to establish development environment",
+            "ASSIGNEE": "TBD",
+            "ESTIMATE": "4h",
+            "RISK_LEVEL": "Low",
+            
+            # Implementation details
+            "DETAIL_1": "Initialize repository structure",
+            "DETAIL_2": "Configure development tools",
+            
+            # Acceptance criteria
+            "CRITERIA_1": "Project builds successfully",
+            "CRITERIA_2": "CI pipeline runs all checks",
+            
+            # Traceability
+            "ID": "REQ-001",
+            "SPECIFIC_EARS_CRITERIA": "System shall process requests within 2s",
+            
+            # Testing
+            "TEST_SCOPE": "Unit and integration tests",
+            "MANUAL_STEPS": "Verify deployment to staging",
+            "COVERAGE": "80%",
+            
+            # Status tracking
+            "TOTAL_TASKS": "6",
+            "COMPLETED_TASKS": "0",
+            "IN_PROGRESS_TASKS": "0",
+            "BLOCKED_TASKS": "0",
+            "PERCENTAGE": "0%",
+            
+            # Process
+            "MIN_REVIEWERS": "2",
+            "SECURITY_TOOL": "bandit, trufflehog",
+            
+            # Notes and risks
+            "NOTE_1": "Consider incremental rollout",
+            "NOTES": "Initial task breakdown",
+            "ISSUE": "None identified",
+            "RISK_DESCRIPTION": "Integration complexity",
+            
+            # Planning
+            "NEXT_PHASE": "Implementation",
+            "NEXT_MAJOR_TASK": "Begin Phase 1 foundation work",
+            
+            # Ownership
+            "OWNER": "TBD",
+            "CHANGES": "Initial version",
         }
 
     async def generate_tasks(self, feature_name: str, auto_approve: bool = False) -> dict[str, Any]:
@@ -335,83 +468,22 @@ class SpecWorkflow:
                 "message": "Please review and approve design first, or use auto_approve=true",
             }
 
-        # Create task breakdown
-        tasks = TasksDocument(
-            feature_name=feature_name,
-            tasks=[
-                TaskItem(
-                    task_id="1.1",
-                    title="Setup project structure",
-                    description="Initialize directories and configuration files",
-                    estimated_hours=2.0,
-                ),
-                TaskItem(
-                    task_id="1.2",
-                    title="Implement data models",
-                    description="Create Pydantic models for data validation",
-                    estimated_hours=4.0,
-                    dependencies=["1.1"],
-                ),
-                TaskItem(
-                    task_id="2.1",
-                    title="Implement API endpoints",
-                    description="Create FastAPI routes and handlers",
-                    estimated_hours=8.0,
-                    dependencies=["1.2"],
-                ),
-                TaskItem(
-                    task_id="2.2",
-                    title="Add authentication",
-                    description="Implement JWT-based authentication",
-                    estimated_hours=6.0,
-                    dependencies=["2.1"],
-                ),
-                TaskItem(
-                    task_id="3.1",
-                    title="Write unit tests",
-                    description="Achieve >80% test coverage",
-                    estimated_hours=8.0,
-                    dependencies=["2.2"],
-                ),
-                TaskItem(
-                    task_id="3.2",
-                    title="Integration testing",
-                    description="Test end-to-end workflows",
-                    estimated_hours=6.0,
-                    dependencies=["3.1"],
-                ),
-            ],
-            total_estimated_hours=34.0,
-        )
+        # Load tasks template
+        template = self.template_loader.load_spec_template("tasks", "tasks")
+        if not template:
+            return {"success": False, "error": "Tasks template not found"}
+
+        # Build context and render template
+        context = self._build_tasks_context(metadata)
+        try:
+            content = self.template_loader.render_jinja_template(template, context)
+        except Exception as e:
+            logger.error(f"Failed to render tasks template: {e}")
+            return {"success": False, "error": f"Template rendering failed: {str(e)}"}
 
         # Save tasks
         spec_dir = self._get_spec_dir(feature_name)
         tasks_file = spec_dir / "tasks.md"
-
-        content = f"""# Tasks: {feature_name}
-
-**Total Estimated Hours**: {tasks.total_estimated_hours}
-
-## Task Breakdown
-
-{
-            chr(10).join(
-                f'''### Task {task.task_id}: {task.title}
-
-**Description**: {task.description}
-**Estimated**: {task.estimated_hours}h
-**Dependencies**: {", ".join(task.dependencies) if task.dependencies else "None"}
-**Status**: {"✅ Complete" if task.completed else "⏳ Pending"}
-
-'''
-                for task in tasks.tasks
-            )
-        }
-
----
-*Generated: {tasks.created_at}*
-"""
-
         tasks_file.write_text(content)
 
         # Update metadata
@@ -424,11 +496,9 @@ class SpecWorkflow:
             "success": True,
             "feature_name": feature_name,
             "tasks_file": str(tasks_file),
-            "total_tasks": len(tasks.tasks),
-            "total_hours": tasks.total_estimated_hours,
             "current_phase": metadata.current_phase.value,
             "auto_approved": auto_approve,
-            "message": "Tasks generated successfully",
+            "message": "Tasks generated successfully using enhanced template",
         }
 
     async def get_spec_status(self, feature_name: str) -> dict[str, Any]:

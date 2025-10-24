@@ -33,13 +33,49 @@ Generate complete requirements for feature **$1** based on the project descripti
    - Read `{{KIRO_DIR}}/settings/rules/ears-format.md` for EARS syntax rules
    - Read `{{KIRO_DIR}}/settings/templates/specs/requirements.md` for document structure
 
-3. **Generate Requirements**:
-   - Create initial requirements based on project description
+3. **Generate Requirements Document**:
+   
+   **A. Fill Document Metadata Section**:
+   - VERSION: Start with 1.0.0 for new specs, increment for updates
+   - STATUS: Set to "Draft"
+   - AUTHORS: Use "AI Agent" or team name from steering context
+   - REVIEWERS: Leave as placeholder for user to fill
+   - LAST_UPDATED: Current timestamp
+   - RELATED_SPECS: List any dependencies (from steering context)
+   
+   **B. Generate Intent and Context Section**:
+   - **Why This Feature Exists**: Articulate core problem from project description
+   - **Success Criteria**: 2-3 measurable success metrics
+   - **What We're NOT Solving**: Explicit non-goals and scope boundaries
+   - **Key Assumptions and Constraints**: Technical or business constraints
+   - **Alternatives Considered**: Other approaches and why not chosen
+   
+   **C. Generate Requirements with Enhanced Format**:
+   - Use REQ-X.Y numbering (e.g., REQ-1.0, REQ-1.1, REQ-2.0)
+   - For each requirement include:
+     * **ID**: REQ-X.Y
+     * **Priority**: Critical | High | Medium | Low
+     * **Intent**: WHY this requirement exists (the underlying need)
+     * **User Story**: As a [specific role], I need [specific capability], so that [measurable benefit]
+     * **Acceptance Criteria**: Using proper EARS format
    - Group related functionality into logical requirement areas
-   - Apply EARS format to all acceptance criteria
-   - Use language specified in spec.json
+   - Apply EARS format to all acceptance criteria (WHEN-THEN, IF-THEN, WHILE-THE, WHERE-THE)
+   - For non-obvious EARS criteria, add **Intent** documentation explaining why
+   - Use concrete system/service names, never "the system"
+   
+   **D. Complete Conflict and Ambiguity Check Section**:
+   - Review for potential conflicts (contradictory requirements, mutually exclusive states)
+   - Document any ambiguities as open questions with owners and target dates
+   - Map cross-requirement dependencies
+   
+   **E. Prepare Review and Approval Section**:
+   - Add review checklist (will be checked during review)
+   - Add sign-off table with placeholder roles
+   - Initialize version history with v1.0.0 entry
+   
+   Use language specified in spec.json for all content
 
-4. **Update Metadata**:
+4. **Update Metadata** in spec.json:
    - Set `phase: "requirements-generated"`
    - Set `approvals.requirements.generated: true`
    - Update `updated_at` timestamp
