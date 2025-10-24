@@ -196,6 +196,70 @@ Each workflow phase now has a dedicated context builder that:
 5. Default values should be meaningful (e.g., "TBD" for review fields, "Sprint 1" for sprint)
 6. Template variable audit is essential before implementation (found 115 total variables)
 
+---
+
+## Phase 5: Package Distribution Fix (2025-10-24)
+
+**Status:** ✅ Complete (PR #8)
+
+**Change Summary:**
+Fixed template packaging so enhanced EARS templates are available when cc-sdd is installed from PyPI/GitHub.
+
+**Problem Discovered:**
+When cc-sdd was installed via `pip install git+https://github.com/dscv101/cc-sdd.git`, the `tools/cc-sdd/templates/` directory was NOT included in the package distribution. This caused the MCP server to fall back to basic hardcoded templates (~200 bytes) instead of the enhanced 7KB+ EARS templates.
+
+**Root Cause:**
+The `pyproject.toml` build configuration only packaged `src/cc_sdd_mcp`, but templates are located in `tools/cc-sdd/templates/` which is outside the packaged directory.
+
+**Solution:**
+
+1. **Package Configuration (`pyproject.toml`)**
+   - Added Hatchling shared-data configuration:
+   ```toml
+   [tool.hatch.build.targets.wheel.shared-data]
+   "tools" = "tools"
+   ```
+   - This installs templates to `<prefix>/tools/cc-sdd/templates`
+
+2. **Template Discovery (`src/cc_sdd_mcp/utils/templates.py`)**
+   - Enhanced `TEMPLATES_DIR` with intelligent fallback paths:
+     1. Editable install: `<package_root>/../../../../tools/cc-sdd/templates`
+     2. Wheel install: `<prefix>/tools/cc-sdd/templates`
+     3. Virtual env: `sys.prefix/tools/cc-sdd/templates`
+   - Ensures templates are found in all installation scenarios
+
+**Impact:**
+- ✅ Enhanced EARS templates (7KB+) now work in all installations
+- ✅ Generated requirements: 7,257 chars vs. 200 bytes before
+- ✅ Includes Sean Grove's philosophy quotes
+- ✅ Full EARS notation with intent preservation
+- ✅ Template discovery works in virtual envs, system installs, and editable mode
+
+**Testing:**
+Built and tested wheel package installation:
+```python
+# Clean virtual env test
+TEMPLATES_DIR: /tmp/test_env/tools/cc-sdd/templates
+Exists: True ✅
+Size: 6993 chars ✅
+
+# Full workflow test
+✅ Generated requirements: 7267 chars
+✅ Contains EARS notation: True
+✅ Contains Sean Grove quote: True
+```
+
+**Files Modified:**
+- `pyproject.toml`: Added shared-data configuration
+- `src/cc_sdd_mcp/utils/templates.py`: Enhanced template discovery logic
+
+**Lessons Learned:**
+1. Python packages need explicit configuration to include data files outside src/
+2. Hatchling's shared-data feature installs files to `<prefix>/` directory structure
+3. Template discovery must handle multiple installation scenarios (editable, wheel, venv)
+4. Always test package installations in clean environments to catch distribution issues
+5. Path calculations should try multiple fallback locations with exists() checks
+
 ## Future Considerations
 
 ### Potential Enhancements
