@@ -1,11 +1,42 @@
 """Template discovery and loading utilities with Jinja2 support."""
 
+import sys
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-# Path to templates directory relative to package root
-TEMPLATES_DIR = Path(__file__).parent.parent.parent.parent / "tools" / "cc-sdd" / "templates"
+
+def _find_templates_dir() -> Path:
+    """Find the templates directory, handling both editable and installed packages.
+    
+    Returns:
+        Path to templates directory
+    """
+    # Try editable install path (relative to package root)
+    editable_path = Path(__file__).parent.parent.parent.parent / "tools" / "cc-sdd" / "templates"
+    if editable_path.exists():
+        return editable_path
+    
+    # Try installed package path (shared-data location)
+    # Shared-data installs to <prefix>/tools/cc-sdd/templates
+    # where <prefix> is typically sys.prefix or site-packages/../../../
+    site_packages = Path(__file__).parent.parent.parent  # Up to site-packages
+    prefix = site_packages.parent.parent.parent  # Up to prefix
+    installed_path = prefix / "tools" / "cc-sdd" / "templates"
+    if installed_path.exists():
+        return installed_path
+    
+    # Fallback: try sys.prefix (for virtual envs)
+    sys_prefix_path = Path(sys.prefix) / "tools" / "cc-sdd" / "templates"
+    if sys_prefix_path.exists():
+        return sys_prefix_path
+    
+    # If nothing found, return the editable path (will fail later with clear error)
+    return editable_path
+
+
+# Path to templates directory
+TEMPLATES_DIR = _find_templates_dir()
 
 
 class TemplateLoader:
